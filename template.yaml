@@ -1,0 +1,78 @@
+esphomeyaml:
+  name: template
+  platform: ESP32
+  board: esp32doit-devkit-v1
+  includes:
+    - bedroom.h
+  libraries:
+    - "Adafruit CCS811 Library"
+    - "SparkFun Si7021 Humidity and Temperature Sensor"
+
+<<: !include credentials.yaml
+
+# Example configuration entry
+i2c:
+  sda: 21
+  scl: 22
+  scan: True
+
+uart:
+  rx_pin: 23
+  baud_rate: 9600
+
+output:
+  - platform: gpio
+    pin: 27
+    id: power_for_dht
+    inverted: True
+
+# Example configuration entry
+sensor:
+  - platform: bmp280
+    temperature:
+      name: "Temperature"
+      oversampling: 16x
+    pressure:
+      name: "Pressure"
+      oversampling: 16x
+    address: 0x76
+    update_interval: 60s
+  - platform: wifi_signal
+    name: "WiFi"
+    update_interval: 60s
+  - platform: pmsx003
+    type: PMSX003
+    pm_1_0:
+      name: "PM1.0"
+    pm_2_5:
+      name: "PM2.5"
+    pm_10_0:
+      name: "PM10"
+  - platform: dht
+    model: AM2302
+    pin: 25
+    temperature:
+      name: "Temp"
+    humidity:
+      name: "RH"
+    update_interval: 60s
+  - platform: custom
+    lambda: |-
+      auto mySensors = new MySensors();
+      App.register_component(mySensors);
+      return {&mySensors->co2_sensor, &mySensors->tvoc_sensor};
+    sensors:
+      - name: "eCO2"
+        unit_of_measurement: ppm
+        accuracy_decimals: 0
+      - name: "TVOC"
+        unit_of_measurement: ppb
+        accuracy_decimals: 0
+#      - name: "Humidity"
+#        unit_of_measurement: "%"
+#        accuracy_decimals: 0
+#      - name: "T2"
+#        unit_of_measurement: °C
+#        accuracy_decimals: 1
+
+#      return {&mySensors->co2_sensor, &mySensors->tvoc_sensor, &mySensors->hum_sensor, &mySensors->temp_sensor};
